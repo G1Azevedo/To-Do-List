@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react'; // Adicionado useState
-import { StyleSheet, Text, TextInput, View } from 'react-native'; // Adicionado TextInput
+import React, { useState } from 'react';
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native'; // Adicionado Button e TouchableOpacity
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -30,7 +30,11 @@ export default function LoginScreen() {
                     secureTextEntry={true}
                 />
 
-                {/* Botão e link de cadastro serão adicionados depois */}
+                <Button title="Entrar" onPress={() => { /* Lógica de login aqui */ }} />
+
+                <TouchableOpacity onPress={() => { /* Navegar para tela de cadastro */ }} style={styles.linkContainer}>
+                    <Text style={styles.linkText}>Ainda não tem uma conta? Cadastre-se</Text>
+                </TouchableOpacity>
             </View>
 
             <StatusBar style="auto" />
@@ -52,9 +56,9 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
     },
-    form: { // Estilo inicial para o container do formulário
+    form: {
         backgroundColor: '#E6F3FF',
-        padding: 10, // Padding menor inicialmente
+        padding: 10, // Mantendo padding menor por enquanto
         borderRadius: 10,
         width: '100%',
     },
@@ -67,10 +71,17 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        marginBottom: 10, // Margem menor inicialmente
-        paddingVertical: 8, // Padding menor inicialmente
+        marginBottom: 15, // Aumentando um pouco a margem inferior do input
+        paddingVertical: 8,
         paddingHorizontal: 10,
         fontSize: 16,
     },
-    // Outros estilos serão adicionados depois
+    linkContainer: {
+        marginTop: 15, // Espaçamento acima do link
+        alignItems: 'center',
+    },
+    linkText: {
+        color: 'blue',
+        textDecorationLine: 'underline',
+    },
 });
