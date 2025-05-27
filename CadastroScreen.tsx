@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native'; // Button será adicionado no próximo
 
 export default function CadastroScreen() {
     const [nome, setNome] = useState("");
@@ -31,7 +31,16 @@ export default function CadastroScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
-                {/* Outros campos virão aqui */}
+
+                <Text style={styles.label}>Senha</Text>
+                <TextInput
+                    placeholder="Digite sua senha"
+                    value={senha}
+                    onChangeText={setSenha}
+                    style={styles.input}
+                    secureTextEntry={true}
+                />
+                {/* Botão e link virão aqui */}
             </View>
 
             <StatusBar style="auto" />
@@ -39,6 +48,7 @@ export default function CadastroScreen() {
     );
 }
 
+// Estilos permanecem os mesmos do commit anterior
 const styles = StyleSheet.create({
     container: {
         flex: 1,
