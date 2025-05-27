@@ -1,7 +1,7 @@
 // LoginScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native'; // Adicionado Alert
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './AppNavigator'; // Importa os tipos do AppNavigator
 
@@ -23,13 +23,12 @@ export default function LoginScreen({ navigation }: Props) {
     };
 
     const handleLogin = () => {
-        // Lógica de login simulada:
-        if (email.trim() !== "" && senha.trim() !== "") {
-            console.log("Tentativa de login com:", email);
-            // Substitui a pilha de navegação para que o usuário não volte para Login
+        if (email.trim() === "gabriel@gmail.com" && senha === "gabriel123") {
+            console.log("Login bem-sucedido para:", email);
+            // Substitui a pilha de navegação para que o usuário não volte para Login ao pressionar "voltar"
             navigation.replace('Tarefas');
         } else {
-            alert("Por favor, preencha email e senha.");
+            Alert.alert("Erro de Login", "Email ou senha incorretos."); // Exibe o alerta de erro
         }
     };
 
@@ -72,19 +71,19 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#fff', // Fundo branco, conforme o briefing original para outras telas
         padding: 20,
-        justifyContent: 'center',
+        justifyContent: 'center', // Centralizar o formulário na tela
     },
     titulo: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: 'blue', //
+        color: 'blue', // Cor azul, conforme o briefing original
         marginBottom: 20,
         textAlign: 'center',
     },
     form: {
-        backgroundColor: '#E6F3FF', //
+        backgroundColor: '#E6F3FF', // Um azul bem clarinho, puxando para o branco e azul do briefing
         padding: 20,
         borderRadius: 10,
         width: '100%',
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     linkText: {
-        color: 'blue', //
+        color: 'blue', // Cor azul para o link
         textDecorationLine: 'underline',
     },
 });
