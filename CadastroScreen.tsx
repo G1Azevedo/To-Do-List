@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native'; // Adicionado TextInput
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function CadastroScreen() {
     const [nome, setNome] = useState("");
@@ -20,6 +20,16 @@ export default function CadastroScreen() {
                     onChangeText={setNome}
                     style={styles.input}
                     autoCapitalize="words"
+                />
+
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                    placeholder="Digite seu email"
+                    value={email}
+                    onChangeText={setEmail}
+                    style={styles.input}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                 />
                 {/* Outros campos virão aqui */}
             </View>
@@ -49,12 +59,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         width: '100%',
     },
-    label: { // Novo estilo
+    label: {
         fontSize: 16,
         marginBottom: 5,
         color: '#333',
     },
-    input: { // Novo estilo
+    input: {
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
