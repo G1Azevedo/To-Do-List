@@ -1,10 +1,37 @@
+// LoginScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './AppNavigator'; // Importa os tipos do AppNavigator
 
-export default function LoginScreen() {
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'Login'
+>;
+
+type Props = {
+    navigation: LoginScreenNavigationProp;
+};
+
+export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
+
+    const irParaCadastro = () => {
+        navigation.navigate('Cadastro'); // Navega para a tela de Cadastro
+    };
+
+    const handleLogin = () => {
+        // Lógica de login simulada:
+        if (email.trim() !== "" && senha.trim() !== "") {
+            console.log("Tentativa de login com:", email);
+            // Substitui a pilha de navegação para que o usuário não volte para Login
+            navigation.replace('Tarefas');
+        } else {
+            alert("Por favor, preencha email e senha.");
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -30,9 +57,9 @@ export default function LoginScreen() {
                     secureTextEntry={true}
                 />
 
-                <Button title="Entrar" onPress={() => { /* Lógica de login aqui */ }} />
+                <Button title="Entrar" onPress={handleLogin} />
 
-                <TouchableOpacity onPress={() => { /* Navegar para tela de cadastro */ }} style={styles.linkContainer}>
+                <TouchableOpacity onPress={irParaCadastro} style={styles.linkContainer}>
                     <Text style={styles.linkText}>Ainda não tem uma conta? Cadastre-se</Text>
                 </TouchableOpacity>
             </View>
@@ -45,43 +72,43 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff', // Fundo branco, conforme o briefing original para outras telas
+        backgroundColor: '#fff',
         padding: 20,
-        justifyContent: 'center', // Centralizar o formulário na tela
+        justifyContent: 'center',
     },
     titulo: {
-        fontSize: 28, // Aumentei um pouco para dar mais destaque ao título da tela
+        fontSize: 28,
         fontWeight: 'bold',
-        color: 'blue', // Cor azul, conforme o briefing original
-        marginBottom: 20, // Aumentei a margem inferior
+        color: 'blue', //
+        marginBottom: 20,
         textAlign: 'center',
     },
     form: {
-        backgroundColor: '#E6F3FF', // Um azul bem clarinho, puxando para o branco e azul do briefing
-        padding: 20, // Aumentei o padding interno do formulário
+        backgroundColor: '#E6F3FF', //
+        padding: 20,
         borderRadius: 10,
-        width: '100%', // Ocupar toda a largura disponível
+        width: '100%',
     },
     label: {
         fontSize: 16,
         marginBottom: 5,
-        color: '#333', // Cor um pouco mais escura para o label, para contraste
+        color: '#333',
     },
     input: {
-        borderWidth: 1, // Adicionei borda completa para melhor visualização
+        borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5, // Bordas levemente arredondadas no input
-        marginBottom: 15, // Aumentei a margem inferior
-        paddingVertical: 10, // Aumentei o padding vertical
-        paddingHorizontal: 10, // Padding horizontal
+        borderRadius: 5,
+        marginBottom: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
         fontSize: 16,
     },
     linkContainer: {
-        marginTop: 20, // Espaçamento acima do link
-        alignItems: 'center', // Centralizar o texto do link
+        marginTop: 20,
+        alignItems: 'center',
     },
     linkText: {
-        color: 'blue', // Cor azul para o link
-        textDecorationLine: 'underline', // Sublinhado para indicar que é um link
+        color: 'blue', //
+        textDecorationLine: 'underline',
     },
 });

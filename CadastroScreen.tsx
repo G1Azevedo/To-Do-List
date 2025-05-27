@@ -1,12 +1,43 @@
+// CadastroScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native'; // Adicionados Button e TouchableOpacity
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native'; // Adicionado Alert
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './AppNavigator'; // Importa os tipos do AppNavigator
 
-export default function CadastroScreen() {
+type CadastroScreenNavigationProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'Cadastro'
+>;
+
+type Props = {
+    navigation: CadastroScreenNavigationProp;
+};
+
+export default function CadastroScreen({ navigation }: Props) {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
-    const [confirmarSenha, setConfirmarSenha] = useState(""); // Estado presente no código original, mantido
+    const [confirmarSenha, setConfirmarSenha] = useState("");
+
+    const irParaLogin = () => {
+        navigation.navigate('Login'); // Navega para a tela de Login
+    };
+
+    const handleCadastro = () => {
+        if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
+            Alert.alert("Erro", "Por favor, preencha todos os campos.");
+            return;
+        }
+        if (senha !== confirmarSenha) {
+            Alert.alert("Erro", "As senhas não coincidem.");
+            return;
+        }
+        // Lógica de cadastro simulada:
+        console.log("Tentativa de cadastro para:", nome, email);
+        Alert.alert("Sucesso", "Cadastro realizado! Faça login para continuar.");
+        navigation.navigate('Login'); // Navega para Login após cadastro
+    };
 
     return (
         <View style={styles.container}>
@@ -34,15 +65,13 @@ export default function CadastroScreen() {
 
                 <Text style={styles.label}>Senha</Text>
                 <TextInput
-                    placeholder="Digite sua senha"
+                    placeholder="Digite sua senha (mín. 6 caracteres)" // Adicionada dica
                     value={senha}
                     onChangeText={setSenha}
                     style={styles.input}
                     secureTextEntry={true}
                 />
 
-                {/* O campo Confirmar Senha não estava no JSX original, mas o estado existe.
-                    Se fosse adicioná-lo:
                 <Text style={styles.label}>Confirmar Senha</Text>
                 <TextInput
                     placeholder="Confirme sua senha"
@@ -51,11 +80,10 @@ export default function CadastroScreen() {
                     style={styles.input}
                     secureTextEntry={true}
                 />
-                */}
 
-                <Button title="Cadastrar" onPress={() => { /* Lógica de cadastro aqui */ }} />
+                <Button title="Cadastrar" onPress={handleCadastro} />
 
-                <TouchableOpacity onPress={() => { /* Navegar para tela de login */ }} style={styles.linkContainer}>
+                <TouchableOpacity onPress={irParaLogin} style={styles.linkContainer}>
                     <Text style={styles.linkText}>Já tem uma conta? Faça Login</Text>
                 </TouchableOpacity>
             </View>
@@ -68,19 +96,19 @@ export default function CadastroScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff', // Fundo branco
+        backgroundColor: '#fff', //
         padding: 20,
         justifyContent: 'center',
     },
     titulo: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: 'blue', // Cor azul
+        color: 'blue', //
         marginBottom: 20,
         textAlign: 'center',
     },
     form: {
-        backgroundColor: '#E6F3FF', // Azul bem clarinho
+        backgroundColor: '#E6F3FF', //
         padding: 20,
         borderRadius: 10,
         width: '100%',
@@ -99,12 +127,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         fontSize: 16,
     },
-    linkContainer: { // Novo estilo
+    linkContainer: {
         marginTop: 20,
         alignItems: 'center',
     },
-    linkText: { // Novo estilo
-        color: 'blue', // Cor azul para o link
+    linkText: {
+        color: 'blue', //
         textDecorationLine: 'underline',
     },
 });
