@@ -2,9 +2,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import LoginScreen from '../LoginScreen'; // Ajuste o caminho se necessário
-import CadastroScreen from '../CadastroScreen'; // Ajuste o caminho se necessário
-import TarefasScreen from '../TarefasScreen'; // Você precisará criar este arquivo com o conteúdo da sua tela de tarefas
+import LoginScreen from './LoginScreen'; // Ajuste o caminho se necessário
+import CadastroScreen from './CadastroScreen'; // Ajuste o caminho se necessário
+import TarefasScreen from './App'; // Você precisará criar este arquivo com o conteúdo da sua tela de tarefas
 
 // Defina os tipos para suas rotas
 export type RootStackParamList = {
