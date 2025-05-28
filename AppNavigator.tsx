@@ -2,15 +2,15 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import LoginScreen from './LoginScreen'; // Ajuste o caminho se necessário
-import CadastroScreen from './CadastroScreen'; // Ajuste o caminho se necessário
-import TarefasScreen from './App'; // Você precisará criar este arquivo com o conteúdo da sua tela de tarefas
+import LoginScreen from './LoginScreen';
+import CadastroScreen from './CadastroScreen';
+// Alterado para importar de './TarefasScreen' e o componente TarefasScreen
+import TarefasScreen from './TarefasScreen';
 
-// Defina os tipos para suas rotas
 export type RootStackParamList = {
     Login: undefined;
     Cadastro: undefined;
-    Tarefas: undefined; // Ou { userId: string } etc., se precisar passar parâmetros
+    Tarefas: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,7 +30,7 @@ export default function AppNavigator() {
             />
             <Stack.Screen
                 name="Tarefas"
-                component={TarefasScreen} // Este será o componente que antes era seu App.tsx
+                component={TarefasScreen} // Agora usa o componente TarefasScreen importado corretamente
                 options={{ title: 'Minhas Tarefas' }}
             />
         </Stack.Navigator>

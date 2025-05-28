@@ -1,9 +1,9 @@
 // LoginScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native'; // Adicionado Alert
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native'; // Alert removido se não for mais usado para outros fins
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from './AppNavigator'; // Importa os tipos do AppNavigator
+import { RootStackParamList } from './AppNavigator';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -17,18 +17,22 @@ type Props = {
 export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
+    const [mensagemErro, setMensagemErro] = useState(""); // Novo estado para a mensagem de erro
 
     const irParaCadastro = () => {
-        navigation.navigate('Cadastro'); // Navega para a tela de Cadastro
+        setMensagemErro(""); // Limpa a mensagem de erro ao navegar
+        navigation.navigate('Cadastro');
     };
 
     const handleLogin = () => {
+        console.log("Tentativa de login com email:", email, "e senha:", senha);
         if (email.trim() === "gabriel@gmail.com" && senha === "gabriel123") {
             console.log("Login bem-sucedido para:", email);
-            // Substitui a pilha de navegação para que o usuário não volte para Login ao pressionar "voltar"
+            setMensagemErro(""); // Limpa a mensagem de erro em caso de sucesso
             navigation.replace('Tarefas');
         } else {
-            Alert.alert("Erro de Login", "Email ou senha incorretos."); // Exibe o alerta de erro
+            console.log("Credenciais incorretas, definindo mensagem de erro na tela.");
+            setMensagemErro("Usuário ou senha incorreta."); // Define a mensagem de erro
         }
     };
 
@@ -41,7 +45,10 @@ export default function LoginScreen({ navigation }: Props) {
                 <TextInput
                     placeholder="Digite seu email"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(text) => {
+                        setEmail(text);
+                        if (mensagemErro) setMensagemErro(""); // Limpa o erro ao digitar
+                    }}
                     style={styles.input}
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -51,10 +58,16 @@ export default function LoginScreen({ navigation }: Props) {
                 <TextInput
                     placeholder="Digite sua senha"
                     value={senha}
-                    onChangeText={setSenha}
+                    onChangeText={(text) => {
+                        setSenha(text);
+                        if (mensagemErro) setMensagemErro(""); // Limpa o erro ao digitar
+                    }}
                     style={styles.input}
                     secureTextEntry={true}
                 />
+
+                {/* Exibe a mensagem de erro aqui, se houver */}
+                {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
                 <Button title="Entrar" onPress={handleLogin} />
 
@@ -71,19 +84,19 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff', // Fundo branco, conforme o briefing original para outras telas
+        backgroundColor: '#fff',
         padding: 20,
-        justifyContent: 'center', // Centralizar o formulário na tela
+        justifyContent: 'center',
     },
     titulo: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: 'blue', // Cor azul, conforme o briefing original
+        color: 'blue',
         marginBottom: 20,
         textAlign: 'center',
     },
     form: {
-        backgroundColor: '#E6F3FF', // Um azul bem clarinho, puxando para o branco e azul do briefing
+        backgroundColor: '#E6F3FF',
         padding: 20,
         borderRadius: 10,
         width: '100%',
@@ -107,7 +120,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     linkText: {
-        color: 'blue', // Cor azul para o link
+        color: 'blue',
         textDecorationLine: 'underline',
     },
+    // Novo estilo para a mensagem de erro
+    mensagemErroText: {
+        color: 'red',
+        textAlign: 'center',
+        marginBottom: 10,
+        fontSize: 14,
+    }
 });
