@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native'; // Adicionado Alert para consistência, embora não usado neste exemplo
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // Importação para tipagem da navegação
-import { RootStackParamList } from './AppNavigator'; // Importa os tipos do AppNavigator
+import { RootStackParamList } from '../../navigation/AppNavigator'; // Importa os tipos do AppNavigator
 
 // Define o tipo para a propriedade de navegação da TarefasScreen
 type TarefasScreenNavigationProp = NativeStackNavigationProp<

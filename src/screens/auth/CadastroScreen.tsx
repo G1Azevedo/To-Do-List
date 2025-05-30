@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from './AppNavigator';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,

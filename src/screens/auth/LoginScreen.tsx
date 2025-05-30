@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native'; // Alert removido se não for mais usado para outros fins
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from './AppNavigator';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
