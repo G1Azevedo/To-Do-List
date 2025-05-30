@@ -1,10 +1,7 @@
-// AppNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import LoginScreen from '../screens/auth/LoginScreen';
 import CadastroScreen from '../screens/auth/CadastroScreen';
-// Alterado para importar de './TarefasScreen' e o componente TarefasScreen
 import TarefasScreen from '../screens/app/TarefasScreen';
 
 export type RootStackParamList = {
@@ -30,7 +27,7 @@ export default function AppNavigator() {
             />
             <Stack.Screen
                 name="Tarefas"
-                component={TarefasScreen} // Agora usa o componente TarefasScreen importado corretamente
+                component={TarefasScreen}
                 options={{ title: 'Minhas Tarefas' }}
             />
         </Stack.Navigator>

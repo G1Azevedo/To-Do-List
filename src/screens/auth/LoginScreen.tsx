@@ -17,10 +17,10 @@ type Props = {
 export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
-    const [mensagemErro, setMensagemErro] = useState(""); // Novo estado para a mensagem de erro
+    const [mensagemErro, setMensagemErro] = useState("");
 
     const irParaCadastro = () => {
-        setMensagemErro(""); // Limpa a mensagem de erro ao navegar
+        setMensagemErro("");
         navigation.navigate('Cadastro');
     };
 
@@ -28,11 +28,11 @@ export default function LoginScreen({ navigation }: Props) {
         console.log("Tentativa de login com email:", email, "e senha:", senha);
         if (email.trim() === "gabriel@gmail.com" && senha === "gabriel123") {
             console.log("Login bem-sucedido para:", email);
-            setMensagemErro(""); // Limpa a mensagem de erro em caso de sucesso
+            setMensagemErro("");
             navigation.replace('Tarefas');
         } else {
             console.log("Credenciais incorretas, definindo mensagem de erro na tela.");
-            setMensagemErro("Usuário ou senha incorreta."); // Define a mensagem de erro
+            setMensagemErro("Usuário ou senha incorreta.");
         }
     };
 
@@ -47,7 +47,7 @@ export default function LoginScreen({ navigation }: Props) {
                     value={email}
                     onChangeText={(text) => {
                         setEmail(text);
-                        if (mensagemErro) setMensagemErro(""); // Limpa o erro ao digitar
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     keyboardType="email-address"
@@ -60,13 +60,13 @@ export default function LoginScreen({ navigation }: Props) {
                     value={senha}
                     onChangeText={(text) => {
                         setSenha(text);
-                        if (mensagemErro) setMensagemErro(""); // Limpa o erro ao digitar
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     secureTextEntry={true}
                 />
 
-                {/* Exibe a mensagem de erro aqui, se houver */}
+                { }
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
                 <Button title="Entrar" onPress={handleLogin} />
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'underline',
     },
-    // Novo estilo para a mensagem de erro
+
     mensagemErroText: {
         color: 'red',
         textAlign: 'center',

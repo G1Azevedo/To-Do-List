@@ -1,22 +1,19 @@
-// TarefasScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native'; // Adicionado Alert para consistência, embora não usado neste exemplo
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'; // Importação para tipagem da navegação
-import { RootStackParamList } from '../../navigation/AppNavigator'; // Importa os tipos do AppNavigator
+import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
-// Define o tipo para a propriedade de navegação da TarefasScreen
 type TarefasScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
     'Tarefas'
 >;
 
-// Define o tipo para as props do componente TarefasScreen
 type Props = {
     navigation: TarefasScreenNavigationProp;
 };
 
-export default function TarefasScreen({ navigation }: Props) { // Adicionada a prop navigation
+export default function TarefasScreen({ navigation }: Props) {
 
     const [titulo, setTitulo] = useState("");
     const [descricao, setDescricao] = useState("");
@@ -27,18 +24,15 @@ export default function TarefasScreen({ navigation }: Props) { // Adicionada a p
             Alert.alert("Erro", "Por favor, preencha todos os campos da tarefa.");
             return;
         }
-        // Lógica para salvar a tarefa (simulada)
+
         console.log("Tarefa salva:", { titulo, descricao, prazo });
         Alert.alert("Sucesso", "Tarefa salva!");
-        // Limpar campos após salvar
         setTitulo("");
         setDescricao("");
         setPrazo("");
     };
 
     const handleLogout = () => {
-        // Reseta a pilha de navegação para a tela de Login
-        // Isso impede o usuário de voltar para a tela de Tarefas
         navigation.reset({
             index: 0,
             routes: [{ name: 'Login' }],
@@ -93,27 +87,27 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     titulo: {
-        fontSize: 28, // Aumentado para consistência com outras telas
+        fontSize: 28,
         fontWeight: 'bold',
         color: 'blue',
-        marginBottom: 20, // Aumentado para consistência
+        marginBottom: 20,
         textAlign: 'center',
     },
     form: {
-        backgroundColor: '#E6F3FF', // Cor similar ao formulário de Login/Cadastro
+        backgroundColor: '#E6F3FF',
         padding: 20,
         borderRadius: 10,
-        marginBottom: 20, // Adicionado espaço antes do botão de logout
+        marginBottom: 20,
     },
-    label: { // Estilo de label adicionado para consistência
+    label: {
         fontSize: 16,
         marginBottom: 5,
         color: '#333',
     },
     input: {
-        borderWidth: 1, // Alterado para borda completa para consistência
+        borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5, // Adicionado para consistência
+        borderRadius: 5,
         marginBottom: 15,
         paddingVertical: 10,
         paddingHorizontal: 10,
@@ -121,6 +115,6 @@ const styles = StyleSheet.create({
     },
     logoutButtonContainer: {
         marginTop: 20,
-        marginHorizontal: 50, // Para centralizar um pouco o botão se ele for estreito
+        marginHorizontal: 50,
     }
 });

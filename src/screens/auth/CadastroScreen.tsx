@@ -1,4 +1,3 @@
-// CadastroScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native';
@@ -19,32 +18,32 @@ export default function CadastroScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
-    const [mensagemSucesso, setMensagemSucesso] = useState(""); // Novo estado para mensagem de sucesso
-    const [mensagemErro, setMensagemErro] = useState(""); // Estado para mensagens de erro de validação
+    const [mensagemSucesso, setMensagemSucesso] = useState("");
+    const [mensagemErro, setMensagemErro] = useState("");
 
     const irParaLogin = () => {
-        setMensagemSucesso(""); // Limpa mensagens ao navegar
+        setMensagemSucesso("");
         setMensagemErro("");
         navigation.navigate('Login');
     };
 
     const handleCadastro = () => {
-        setMensagemSucesso(""); // Limpa mensagem de sucesso anterior
-        setMensagemErro("");   // Limpa mensagem de erro anterior
+        setMensagemSucesso("");
+        setMensagemErro("");
 
         if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
-            setMensagemErro("Por favor, preencha todos os campos."); // Exibe erro na tela
+            setMensagemErro("Por favor, preencha todos os campos.");
             return;
         }
         if (senha !== confirmarSenha) {
-            setMensagemErro("As senhas não coincidem."); // Exibe erro na tela
+            setMensagemErro("As senhas não coincidem.");
             return;
         }
-        // Lógica de cadastro simulada:
-        console.log("Tentativa de cadastro para:", nome, email);
-        setMensagemSucesso("Usuário cadastrado com sucesso!"); // Define a mensagem de sucesso
 
-        // Limpa os campos do formulário
+        console.log("Tentativa de cadastro para:", nome, email);
+        setMensagemSucesso("Usuário cadastrado com sucesso!");
+
+
         setNome("");
         setEmail("");
         setSenha("");
@@ -117,10 +116,10 @@ export default function CadastroScreen({ navigation }: Props) {
                     secureTextEntry={true}
                 />
 
-                {/* Exibe a mensagem de erro de validação, se houver */}
+                { }
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
-                {/* Exibe a mensagem de sucesso, se houver */}
+                { }
                 {mensagemSucesso ? <Text style={styles.mensagemSucessoText}>{mensagemSucesso}</Text> : null}
 
                 <Button title="Cadastrar" onPress={handleCadastro} />
@@ -177,18 +176,18 @@ const styles = StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'underline',
     },
-    mensagemErroText: { // Já existia um parecido na tela de Login
+    mensagemErroText: {
         color: 'red',
         textAlign: 'center',
         marginBottom: 10,
         fontSize: 14,
     },
-    // Novo estilo para a mensagem de sucesso
+
     mensagemSucessoText: {
         color: 'green',
         textAlign: 'center',
         marginBottom: 10,
-        fontSize: 16, // Um pouco maior para dar destaque
+        fontSize: 16,
         fontWeight: 'bold',
     }
 });
