@@ -46,23 +46,23 @@ Para facilitar o desenvolvimento e testes iniciais, utilizei alguns dados fictí
 
 A interface foi pensada para ser clara, funcional e com visual consistente, visto que a aplicação que escolhi é de fato simples, porém de grande importância na organização pessoal e profissional do usuário que a utilizar. A estilização foi feita com `StyleSheet` do React Native em cada tela.
 
-### 🔐 LoginScreen.tsx
+### LoginScreen.tsx
 - Título em destaque.
 - Formulário com campos de email e senha.
 - Fundo suave (`#E6F3FF`) nos campos de entrada.
 - Botão **"Entrar"**, link para cadastro e área para mensagens de erro.
 
-### 📝 CadastroScreen.tsx
+### CadastroScreen.tsx
 - Segue a estrutura do login.
 - Formulário para nome, email, senha e confirmação de senha.
 - Botão **"Cadastrar"**, link para voltar ao login, e mensagens de sucesso/erro.
 
-### 📋 TarefasScreen.tsx
+### TarefasScreen.tsx
 - Título **"Lista de Tarefas"**.
 - Formulário para adicionar novas tarefas com os campos de título, descrição e prazo.
 - Botão **"Salvar Tarefa"** e um botão **"Sair"** fixado na parte inferior.
 
-### 💡 Detalhes Visuais Comuns
+### Detalhes Visuais Comuns
 - Campos com bordas, preenchimento e rótulos claros.
 - Paleta de cores centrada em tons de azul (para destaques) e cores neutras para fundos e textos, assim como foi definido no briefing.
 
@@ -87,7 +87,7 @@ A interface foi pensada para ser clara, funcional e com visual consistente, vist
 - Permite criar e salvar novas tarefas.
 - A ação de "Sair" redireciona o usuário ao login e limpa a pilha de navegação, impedindo o retorno com o botão "voltar".
 
-### 🌐 Navegação
+### Navegação
 
 A navegação é controlada pelo arquivo **AppNavigator.tsx**, que utiliza `createNativeStackNavigator` da biblioteca `@react-navigation/native-stack`.
 
