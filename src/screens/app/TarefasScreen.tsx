@@ -1,6 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useCallback } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, Alert, FlatList, TouchableOpacity, Modal } from 'react-native';
+import React, { useState } from 'react';
+import {
+    Alert,
+    Button,
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { Tarefa } from '../../model/Tarefa';
@@ -15,76 +25,79 @@ type Props = {
 };
 
 export default function TarefasScreen({ navigation }: Props) {
-    const [tarefas, setTarefas] = useState<Tarefa[]>([]);
-    const [modalVisivel, setModalVisivel] = useState(false);
-    const [titulo, setTitulo] = useState("");
-    const [descricao, setDescricao] = useState("");
-    const [prazo, setPrazo] = useState("");
-    const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
+    const [lista, setLista] = useState<Tarefa[]>([]);
+    const [mostrarModal, setMostrarModal] = useState(false);
+    const [titulo, setTitulo] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [prazo, setPrazo] = useState('');
+    const [editando, setEditando] = useState<Tarefa | null>(null);
 
-    const handleAbrirModalParaNovaTarefa = () => {
-        setTarefaSelecionada(null);
-        setTitulo("");
-        setDescricao("");
-        setPrazo("");
-        setModalVisivel(true);
+    const abrirModal = (tarefa?: Tarefa) => {
+        if (tarefa) {
+            setEditando(tarefa);
+            setTitulo(tarefa.titulo);
+            setDescricao(tarefa.descricao);
+            setPrazo(tarefa.prazo);
+        } else {
+            setEditando(null);
+            setTitulo('');
+            setDescricao('');
+            setPrazo('');
+        }
+        setMostrarModal(true);
     };
 
-    const handleAbrirModalParaEditar = (tarefa: Tarefa) => {
-        setTarefaSelecionada(tarefa);
-        setTitulo(tarefa.titulo);
-        setDescricao(tarefa.descricao);
-        setPrazo(tarefa.prazo);
-        setModalVisivel(true);
-    };
-
-    const handleSalvarTarefa = () => {
+    const salvar = () => {
         if (!titulo.trim() || !descricao.trim() || !prazo.trim()) {
-            Alert.alert("Erro", "Por favor, preencha todos os campos da tarefa.");
+            Alert.alert('Opa!', 'Preencha tudo direitinho antes de salvar.');
             return;
         }
 
-        if (tarefaSelecionada) {
-            setTarefas(tarefasAtuais =>
-                tarefasAtuais.map(t =>
-                    t.id === tarefaSelecionada.id ? { ...t, titulo, descricao, prazo } : t
+        if (editando) {
+            setLista(listaAntiga =>
+                listaAntiga.map(t =>
+                    t.id === editando.id ? { ...t, titulo, descricao, prazo } : t
                 )
             );
-            Alert.alert("Sucesso", "Tarefa atualizada!");
+            Alert.alert('Pronto!', 'Tarefa atualizada com sucesso!');
         } else {
-            const novaTarefa = new Tarefa(titulo, descricao, prazo);
-            setTarefas(tarefasAtuais => [...tarefasAtuais, novaTarefa]);
-            Alert.alert("Sucesso", "Tarefa adicionada!");
+            const nova = new Tarefa(titulo, descricao, prazo);
+            setLista(tarefas => [...tarefas, nova]);
+            Alert.alert('Feito!', 'Tarefa adicionada na sua lista.');
         }
-        setModalVisivel(false);
-    };
-    
-    const handleExcluirTarefa = useCallback((idParaExcluir: string) => {
-        setTarefas(tarefasAtuais =>
-            tarefasAtuais.filter(t => t.id !== idParaExcluir)
-        );
-    }, []);
 
-    const handleLogout = () => {
+        setMostrarModal(false);
+    };
+
+    const excluir = (id: string) => {
+        setLista(tarefas => tarefas.filter(t => t.id !== id));
+    };
+
+    const sair = () => {
         navigation.reset({
             index: 0,
             routes: [{ name: 'Login' }],
         });
     };
 
-    const renderItem = ({ item }: { item: Tarefa }) => (
-        <View style={styles.tarefaContainer}>
-            <View style={styles.tarefaInfo}>
-                <Text style={styles.tarefaTitulo}>{item.titulo}</Text>
+    const renderTarefa = ({ item }: { item: Tarefa }) => (
+        <View style={styles.card}>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.titulo}>{item.titulo}</Text>
                 <Text>{item.descricao}</Text>
-                <Text style={styles.tarefaPrazo}>Prazo: {item.prazo}</Text>
+                <Text style={styles.prazo}>Prazo: {item.prazo}</Text>
             </View>
-            <View style={styles.tarefaBotoes}>
-                <TouchableOpacity style={[styles.botao, styles.botaoEditar]} onPress={() => handleAbrirModalParaEditar(item)}>
+            <View style={styles.botoes}>
+                <TouchableOpacity
+                    style={[styles.botao, styles.editar]}
+                    onPress={() => abrirModal(item)}
+                >
                     <Text style={styles.botaoTexto}>Editar</Text>
                 </TouchableOpacity>
-                {}
-                <TouchableOpacity style={[styles.botao, styles.botaoExcluir]} onPress={() => handleExcluirTarefa(item.id)}>
+                <TouchableOpacity
+                    style={[styles.botao, styles.excluir]}
+                    onPress={() => excluir(item.id)}
+                >
                     <Text style={styles.botaoTexto}>Excluir</Text>
                 </TouchableOpacity>
             </View>
@@ -93,34 +106,35 @@ export default function TarefasScreen({ navigation }: Props) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.titulo}>Minhas Tarefas</Text>
+            <Text style={styles.header}>Minhas Tarefas</Text>
 
             <FlatList
-                data={tarefas}
-                renderItem={renderItem}
+                data={lista}
+                renderItem={renderTarefa}
                 keyExtractor={item => item.id}
-                ListEmptyComponent={<Text style={styles.listaVaziaTexto}>Nenhuma tarefa adicionada ainda.</Text>}
-                extraData={tarefas}
+                ListEmptyComponent={
+                    <Text style={styles.vazio}>Você ainda não adicionou nenhuma tarefa 🙃</Text>
+                }
             />
 
-            <TouchableOpacity
-                style={styles.botaoFlutuante}
-                onPress={handleAbrirModalParaNovaTarefa}
-            >
-                <Text style={styles.botaoFlutuanteTexto}>+</Text>
+            <TouchableOpacity style={styles.fab} onPress={() => abrirModal()}>
+                <Text style={styles.fabText}>+</Text>
             </TouchableOpacity>
 
             <Modal
                 animationType="slide"
-                transparent={true}
-                visible={modalVisivel}
-                onRequestClose={() => setModalVisivel(false)}
+                transparent
+                visible={mostrarModal}
+                onRequestClose={() => setMostrarModal(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitulo}>{tarefaSelecionada ? 'Editar Tarefa' : 'Adicionar Tarefa'}</Text>
+                <View style={styles.overlay}>
+                    <View style={styles.modal}>
+                        <Text style={styles.modalTitulo}>
+                            {editando ? 'Editar Tarefa' : 'Nova Tarefa'}
+                        </Text>
+
                         <TextInput
-                            placeholder="Título da tarefa"
+                            placeholder="Título"
                             value={titulo}
                             onChangeText={setTitulo}
                             style={styles.input}
@@ -137,16 +151,17 @@ export default function TarefasScreen({ navigation }: Props) {
                             onChangeText={setPrazo}
                             style={styles.input}
                         />
+
                         <View style={styles.modalBotoes}>
-                            <Button title="Cancelar" onPress={() => setModalVisivel(false)} color="gray" />
-                            <Button title={tarefaSelecionada ? 'SALVAR' : 'ADICIONAR'} onPress={handleSalvarTarefa} />
+                            <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
+                            <Button title="Salvar" onPress={salvar} />
                         </View>
                     </View>
                 </View>
             </Modal>
 
-            <View style={styles.logoutButtonContainer}>
-                <Button title="SAIR" onPress={handleLogout} color="red" />
+            <View style={styles.logout}>
+                <Button title="Sair da Conta" onPress={sair} color="red" />
             </View>
 
             <StatusBar style="auto" />
@@ -157,13 +172,13 @@ export default function TarefasScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
         padding: 20,
+        backgroundColor: '#fff',
     },
-    titulo: {
+    header: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#0000CD',
+        color: '#0D47A1',
         marginBottom: 20,
         textAlign: 'center',
     },
@@ -171,18 +186,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,
-        marginBottom: 15,
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        fontSize: 16,
+        marginBottom: 12,
+        padding: 10,
+        backgroundColor: '#f2f2f2',
+    },
+    card: {
         backgroundColor: '#f9f9f9',
-    },
-    logoutButtonContainer: {
-        paddingTop: 20,
-        paddingBottom: 10,
-    },
-    tarefaContainer: {
-        backgroundColor: '#f1f1f1',
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
@@ -191,67 +200,64 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         elevation: 2,
     },
-    tarefaInfo: {
-        flex: 1,
-    },
-    tarefaTitulo: {
+    titulo: {
         fontSize: 18,
         fontWeight: 'bold',
         textTransform: 'uppercase',
     },
-    tarefaPrazo: {
+    prazo: {
         fontSize: 12,
-        color: '#666',
+        color: '#555',
         marginTop: 5,
     },
-    tarefaBotoes: {
+    botoes: {
         flexDirection: 'row',
-        gap: 8
+        gap: 10,
     },
     botao: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 5,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 6,
     },
-    botaoEditar: {
-        backgroundColor: '#ffc107',
+    editar: {
+        backgroundColor: '#FFD54F',
     },
-    botaoExcluir: {
-        backgroundColor: '#dc3545',
+    excluir: {
+        backgroundColor: '#E57373',
     },
     botaoTexto: {
-        color: 'white',
+        color: '#fff',
         fontWeight: 'bold',
     },
-    listaVaziaTexto: {
+    vazio: {
         textAlign: 'center',
         marginTop: 50,
         fontSize: 16,
-        color: 'gray',
+        color: '#777',
     },
-    botaoFlutuante: {
+    fab: {
         position: 'absolute',
+        bottom: 90,
+        right: 30,
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: '#007bff',
+        backgroundColor: '#1976D2',
         justifyContent: 'center',
         alignItems: 'center',
-        right: 30,
-        bottom: 100,
-        elevation: 8,
+        elevation: 6,
     },
-    botaoFlutuanteTexto: {
+    fabText: {
+        color: '#fff',
         fontSize: 30,
-        color: 'white',
     },
-    modalOverlay: {
+    overlay: {
         flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
-    modalContainer: {
+    modal: {
         width: '90%',
         backgroundColor: 'white',
         borderRadius: 10,
@@ -261,12 +267,15 @@ const styles = StyleSheet.create({
     modalTitulo: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 15,
         textAlign: 'center',
     },
     modalBotoes: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
         marginTop: 10,
-    }
+    },
+    logout: {
+        marginTop: 20,
+    },
 });
