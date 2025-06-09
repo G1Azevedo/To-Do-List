@@ -13,6 +13,8 @@ type Props = {
     navigation: CadastroScreenNavigationProp;
 };
 
+export const usuariosCadastrados: { email: string; senha: string }[] = [];
+
 export default function CadastroScreen({ navigation }: Props) {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
@@ -40,9 +42,15 @@ export default function CadastroScreen({ navigation }: Props) {
             return;
         }
 
-        console.log("Tentativa de cadastro para:", nome, email);
-        setMensagemSucesso("Usuário cadastrado com sucesso!");
+        if (usuariosCadastrados.some(user => user.email === email)) {
+            setMensagemErro("Este email já está cadastrado. Tente outro.");
+            return;
+        }
 
+        usuariosCadastrados.push({ email, senha });
+        console.log("Usuários cadastrados atualmente (simulação):", usuariosCadastrados);
+
+        setMensagemSucesso("Usuário cadastrado com sucesso! Agora você pode fazer login.");
 
         setNome("");
         setEmail("");
@@ -116,10 +124,8 @@ export default function CadastroScreen({ navigation }: Props) {
                     secureTextEntry={true}
                 />
 
-                { }
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
-                { }
                 {mensagemSucesso ? <Text style={styles.mensagemSucessoText}>{mensagemSucesso}</Text> : null}
 
                 <Button title="Cadastrar" onPress={handleCadastro} />

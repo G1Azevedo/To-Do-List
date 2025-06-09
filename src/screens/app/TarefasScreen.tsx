@@ -69,6 +69,17 @@ export default function TarefasScreen({ navigation }: Props) {
         setMostrarModal(false);
     };
 
+    const concluirTarefa = (id: string) => {
+        setLista(listaAtual =>
+            listaAtual.map(tarefa =>
+                tarefa.id === id ? { ...tarefa, concluida: true } : tarefa
+            )
+        );
+        setTimeout(() => {
+            setLista(listaAtual => listaAtual.filter(tarefa => tarefa.id !== id));
+        }, 500);
+    };
+
     const excluir = (id: string) => {
         setLista(tarefas => tarefas.filter(t => t.id !== id));
     };
@@ -81,13 +92,21 @@ export default function TarefasScreen({ navigation }: Props) {
     };
 
     const renderTarefa = ({ item }: { item: Tarefa }) => (
-        <View style={styles.card}>
+        <View style={[styles.card, item.concluida && styles.tarefaConcluida]}>
             <View style={{ flex: 1 }}>
                 <Text style={styles.titulo}>{item.titulo}</Text>
                 <Text>{item.descricao}</Text>
                 <Text style={styles.prazo}>Prazo: {item.prazo}</Text>
             </View>
             <View style={styles.botoes}>
+                {!item.concluida && (
+                    <TouchableOpacity
+                        style={[styles.botao, styles.concluir]}
+                        onPress={() => concluirTarefa(item.id)}
+                    >
+                        <Text style={styles.botaoTexto}>Concluir</Text>
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity
                     style={[styles.botao, styles.editar]}
                     onPress={() => abrirModal(item)}
@@ -200,6 +219,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         elevation: 2,
     },
+    tarefaConcluida: {
+        opacity: 0.5,
+        textDecorationLine: 'line-through',
+    },
     titulo: {
         fontSize: 18,
         fontWeight: 'bold',
@@ -218,6 +241,9 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 10,
         borderRadius: 6,
+    },
+    concluir: {
+        backgroundColor: '#4CAF50',
     },
     editar: {
         backgroundColor: '#FFD54F',

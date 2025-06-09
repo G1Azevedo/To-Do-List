@@ -1,7 +1,6 @@
-// LoginScreen.tsx
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native'; // Alert removido se não for mais usado para outros fins
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 
@@ -13,6 +12,8 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 type Props = {
     navigation: LoginScreenNavigationProp;
 };
+
+import { usuariosCadastrados } from '../auth/CadastroScreen';
 
 export default function LoginScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
@@ -26,7 +27,12 @@ export default function LoginScreen({ navigation }: Props) {
 
     const handleLogin = () => {
         console.log("Tentativa de login com email:", email, "e senha:", senha);
-        if (email.trim() === "gabriel@gmail.com" && senha === "gabriel123") {
+
+        const usuarioEncontrado = usuariosCadastrados.find(
+            user => user.email === email && user.senha === senha
+        );
+
+        if (usuarioEncontrado) {
             console.log("Login bem-sucedido para:", email);
             setMensagemErro("");
             navigation.replace('Tarefas');
@@ -66,7 +72,6 @@ export default function LoginScreen({ navigation }: Props) {
                     secureTextEntry={true}
                 />
 
-                { }
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
                 <Button title="Entrar" onPress={handleLogin} />
