@@ -29,6 +29,11 @@ export default function CadastroScreen({ navigation }: Props) {
         navigation.navigate('Login');
     };
 
+    const validarEmail = (email: string) => {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(email);
+    };
+
     const handleCadastro = () => {
         setMensagemSucesso("");
         setMensagemErro("");
@@ -37,6 +42,12 @@ export default function CadastroScreen({ navigation }: Props) {
             setMensagemErro("Por favor, preencha todos os campos.");
             return;
         }
+
+        if (!validarEmail(email)) {
+            setMensagemErro("Por favor, digite um e-mail válido.");
+            return;
+        }
+
         if (senha !== confirmarSenha) {
             setMensagemErro("As senhas não coincidem.");
             return;
@@ -68,7 +79,8 @@ export default function CadastroScreen({ navigation }: Props) {
                     placeholder="Digite seu nome completo"
                     value={nome}
                     onChangeText={(text) => {
-                        setNome(text);
+                        const textoFiltrado = text.replace(/[^a-zA-Z\s]/g, '');
+                        setNome(textoFiltrado);
                         if (mensagemErro || mensagemSucesso) {
                             setMensagemErro("");
                             setMensagemSucesso("");
