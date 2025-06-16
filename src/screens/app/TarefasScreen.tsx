@@ -9,11 +9,14 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    Platform
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { Tarefa } from '../../model/Tarefa';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import MaskInput from 'react-native-mask-input';
 
 type TarefasScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -29,39 +32,99 @@ export default function TarefasScreen({ navigation }: Props) {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
-    const [prazo, setPrazo] = useState('');
     const [editando, setEditando] = useState<Tarefa | null>(null);
+
+    const [data, setData] = useState(new Date());
+    const [prazo, setPrazo] = useState('');
+
+    const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
+
+    const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setMostrarDatePicker(false);
+        if (selectedDate) {
+            setData(selectedDate);
+        }
+    };
+
+    const parsePrazo = (prazoString: string): Date => {
+        const parts = prazoString.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+        return new Date();
+    };
+
+    const isPrazoValido = (prazoStr: string): boolean => {
+        const parts = prazoStr.split('/');
+        if (parts.length !== 3) return false;
+
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+
+        if (isNaN(day) || isNaN(month) || isNaN(year) || year < 1000) {
+            return false;
+        }
+
+        const dateObj = new Date(year, month - 1, day);
+        if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day) {
+            return false;
+        }
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        if (dateObj < hoje) {
+            return false;
+        }
+
+        return true;
+    };
 
     const abrirModal = (tarefa?: Tarefa) => {
         if (tarefa) {
             setEditando(tarefa);
             setTitulo(tarefa.titulo);
             setDescricao(tarefa.descricao);
+            setData(parsePrazo(tarefa.prazo));
             setPrazo(tarefa.prazo);
         } else {
             setEditando(null);
             setTitulo('');
             setDescricao('');
-            setPrazo('');
+            const hoje = new Date();
+            setData(hoje);
+            setPrazo(hoje.toLocaleDateString('pt-BR'));
         }
         setMostrarModal(true);
     };
 
     const salvar = () => {
-        if (!titulo.trim() || !descricao.trim() || !prazo.trim()) {
+        if (!titulo.trim() || !descricao.trim()) {
             Alert.alert('Opa!', 'Preencha tudo direitinho antes de salvar.');
             return;
         }
 
+        if (Platform.OS === 'web') {
+            if (!isPrazoValido(prazo)) {
+                Alert.alert('Data Inválida', 'Por favor, insira uma data válida e que não seja no passado.');
+                return;
+            }
+        }
+
+        const prazoFinal = Platform.OS === 'web' ? prazo : data.toLocaleDateString('pt-BR');
+
         if (editando) {
             setLista(listaAntiga =>
                 listaAntiga.map(t =>
-                    t.id === editando.id ? { ...t, titulo, descricao, prazo } : t
+                    t.id === editando.id ? { ...t, titulo, descricao, prazo: prazoFinal } : t
                 )
             );
             Alert.alert('Pronto!', 'Tarefa atualizada com sucesso!');
         } else {
-            const nova = new Tarefa(titulo, descricao, prazo);
+            const nova = new Tarefa(titulo, descricao, prazoFinal);
             setLista(tarefas => [...tarefas, nova]);
             Alert.alert('Feito!', 'Tarefa adicionada na sua lista.');
         }
@@ -164,12 +227,23 @@ export default function TarefasScreen({ navigation }: Props) {
                             onChangeText={setDescricao}
                             style={styles.input}
                         />
-                        <TextInput
-                            placeholder="Prazo (ex: 25/06/2025)"
-                            value={prazo}
-                            onChangeText={setPrazo}
-                            style={styles.input}
-                        />
+
+                        {Platform.OS === 'web' ? (
+                            <MaskInput
+                                value={prazo}
+                                onChangeText={(masked) => setPrazo(masked)}
+                                mask={[/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/]}
+                                placeholder="DD/MM/AAAA"
+                                keyboardType="numeric"
+                                style={styles.input}
+                            />
+                        ) : (
+                            <TouchableOpacity onPress={() => setMostrarDatePicker(true)} style={styles.datePickerButton}>
+                                <Text style={styles.datePickerButtonText}>
+                                    Prazo: {data.toLocaleDateString('pt-BR')}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
 
                         <View style={styles.modalBotoes}>
                             <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
@@ -178,6 +252,17 @@ export default function TarefasScreen({ navigation }: Props) {
                     </View>
                 </View>
             </Modal>
+
+            {mostrarDatePicker && Platform.OS !== 'web' && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={data}
+                    mode="date"
+                    is24Hour={true}
+                    display="default"
+                    onChange={onChangeDate}
+                />
+            )}
 
             <View style={styles.logout}>
                 <Button title="Sair da Conta" onPress={sair} color="red" />
@@ -206,8 +291,22 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 8,
         marginBottom: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        fontSize: 16,
+        backgroundColor: '#f2f2f2',
+    },
+    datePickerButton: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        marginBottom: 12,
         padding: 10,
         backgroundColor: '#f2f2f2',
+        alignItems: 'center',
+    },
+    datePickerButtonText: {
+        fontSize: 16,
     },
     card: {
         backgroundColor: '#f9f9f9',
