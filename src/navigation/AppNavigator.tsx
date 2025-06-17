@@ -1,13 +1,17 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import LoginScreen from '../screens/auth/LoginScreen';
 import CadastroScreen from '../screens/auth/CadastroScreen';
 import TarefasScreen from '../screens/app/TarefasScreen';
+import PerfilScreen from '../screens/app/PerfilScreen';
 
 export type RootStackParamList = {
-    Login: undefined;
+    Login: { successMessage?: string } | undefined;
     Cadastro: undefined;
     Tarefas: undefined;
+    Perfil: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -28,7 +32,23 @@ export default function AppNavigator() {
             <Stack.Screen
                 name="Tarefas"
                 component={TarefasScreen}
-                options={{ title: 'Minhas Tarefas' }}
+                options={({ navigation }) => ({
+                    title: 'Minhas Tarefas',
+                    headerRight: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Perfil')}
+                            style={{ marginRight: 10 }}
+                        >
+                            <Ionicons name="person-circle-outline" size={32} color="#0D47A1" />
+                        </TouchableOpacity>
+                    ),
+                    headerBackVisible: false,
+                })}
+            />
+            <Stack.Screen
+                name="Perfil"
+                component={PerfilScreen}
+                options={{ title: 'Perfil e Configurações' }}
             />
         </Stack.Navigator>
     );

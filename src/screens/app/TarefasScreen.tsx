@@ -17,6 +17,8 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { Tarefa } from '../../model/Tarefa';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import MaskInput from 'react-native-mask-input';
+import { Picker } from '@react-native-picker/picker';
+import { Ionicons } from '@expo/vector-icons';
 
 type TarefasScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -27,6 +29,8 @@ type Props = {
     navigation: TarefasScreenNavigationProp;
 };
 
+const categorias = ['Trabalho', 'Faculdade', 'Academia', 'Compras', 'Outros'];
+
 export default function TarefasScreen({ navigation }: Props) {
     const [lista, setLista] = useState<Tarefa[]>([]);
     const [mostrarModal, setMostrarModal] = useState(false);
@@ -36,6 +40,7 @@ export default function TarefasScreen({ navigation }: Props) {
 
     const [data, setData] = useState(new Date());
     const [prazo, setPrazo] = useState('');
+    const [categoria, setCategoria] = useState(categorias[0]);
 
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
 
@@ -64,7 +69,7 @@ export default function TarefasScreen({ navigation }: Props) {
         const day = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
         const year = parseInt(parts[2], 10);
-
+        
         if (isNaN(day) || isNaN(month) || isNaN(year) || year < 1000) {
             return false;
         }
@@ -90,6 +95,7 @@ export default function TarefasScreen({ navigation }: Props) {
             setDescricao(tarefa.descricao);
             setData(parsePrazo(tarefa.prazo));
             setPrazo(tarefa.prazo);
+            setCategoria(tarefa.categoria || categorias[0]);
         } else {
             setEditando(null);
             setTitulo('');
@@ -97,6 +103,7 @@ export default function TarefasScreen({ navigation }: Props) {
             const hoje = new Date();
             setData(hoje);
             setPrazo(hoje.toLocaleDateString('pt-BR'));
+            setCategoria(categorias[0]);
         }
         setMostrarModal(true);
     };
@@ -119,19 +126,19 @@ export default function TarefasScreen({ navigation }: Props) {
         if (editando) {
             setLista(listaAntiga =>
                 listaAntiga.map(t =>
-                    t.id === editando.id ? { ...t, titulo, descricao, prazo: prazoFinal } : t
+                    t.id === editando.id ? { ...t, titulo, descricao, prazo: prazoFinal, categoria } : t
                 )
             );
             Alert.alert('Pronto!', 'Tarefa atualizada com sucesso!');
         } else {
-            const nova = new Tarefa(titulo, descricao, prazoFinal);
+            const nova = new Tarefa(titulo, descricao, prazoFinal, categoria);
             setLista(tarefas => [...tarefas, nova]);
             Alert.alert('Feito!', 'Tarefa adicionada na sua lista.');
         }
 
         setMostrarModal(false);
     };
-
+    
     const concluirTarefa = (id: string) => {
         setLista(listaAtual =>
             listaAtual.map(tarefa =>
@@ -147,41 +154,39 @@ export default function TarefasScreen({ navigation }: Props) {
         setLista(tarefas => tarefas.filter(t => t.id !== id));
     };
 
-    const sair = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-        });
-    };
-
     const renderTarefa = ({ item }: { item: Tarefa }) => (
         <View style={[styles.card, item.concluida && styles.tarefaConcluida]}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.conteudoCard}>
                 <Text style={styles.titulo}>{item.titulo}</Text>
                 <Text>{item.descricao}</Text>
                 <Text style={styles.prazo}>Prazo: {item.prazo}</Text>
             </View>
-            <View style={styles.botoes}>
-                {!item.concluida && (
+            <View style={styles.colunaAcoes}>
+                <View style={styles.categoriaTag}>
+                    <Text style={styles.categoriaTexto}>{item.categoria}</Text>
+                </View>
+                <View style={styles.botoes}>
+                    {!item.concluida && (
+                        <TouchableOpacity
+                            style={[styles.botao, styles.concluir]}
+                            onPress={() => concluirTarefa(item.id)}
+                        >
+                            <Ionicons name="checkmark-circle-outline" size={22} color="white" />
+                        </TouchableOpacity>
+                    )}
                     <TouchableOpacity
-                        style={[styles.botao, styles.concluir]}
-                        onPress={() => concluirTarefa(item.id)}
+                        style={[styles.botao, styles.editar]}
+                        onPress={() => abrirModal(item)}
                     >
-                        <Text style={styles.botaoTexto}>Concluir</Text>
+                        <Ionicons name="pencil-outline" size={20} color="white" />
                     </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                    style={[styles.botao, styles.editar]}
-                    onPress={() => abrirModal(item)}
-                >
-                    <Text style={styles.botaoTexto}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.botao, styles.excluir]}
-                    onPress={() => excluir(item.id)}
-                >
-                    <Text style={styles.botaoTexto}>Excluir</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.botao, styles.excluir]}
+                        onPress={() => excluir(item.id)}
+                    >
+                        <Ionicons name="trash-outline" size={20} color="white" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -227,7 +232,7 @@ export default function TarefasScreen({ navigation }: Props) {
                             onChangeText={setDescricao}
                             style={styles.input}
                         />
-
+                        
                         {Platform.OS === 'web' ? (
                             <MaskInput
                                 value={prazo}
@@ -245,6 +250,18 @@ export default function TarefasScreen({ navigation }: Props) {
                             </TouchableOpacity>
                         )}
 
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={categoria}
+                                onValueChange={(itemValue, itemIndex) =>
+                                    setCategoria(itemValue)
+                                }>
+                                {categorias.map((cat, index) => (
+                                    <Picker.Item key={index} label={cat} value={cat} />
+                                ))}
+                            </Picker>
+                        </View>
+                        
                         <View style={styles.modalBotoes}>
                             <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
                             <Button title="Salvar" onPress={salvar} />
@@ -252,7 +269,7 @@ export default function TarefasScreen({ navigation }: Props) {
                     </View>
                 </View>
             </Modal>
-
+            
             {mostrarDatePicker && Platform.OS !== 'web' && (
                 <DateTimePicker
                     testID="dateTimePicker"
@@ -263,11 +280,7 @@ export default function TarefasScreen({ navigation }: Props) {
                     onChange={onChangeDate}
                 />
             )}
-
-            <View style={styles.logout}>
-                <Button title="Sair da Conta" onPress={sair} color="red" />
-            </View>
-
+            
             <StatusBar style="auto" />
         </View>
     );
@@ -296,6 +309,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         backgroundColor: '#f2f2f2',
     },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        marginBottom: 12,
+        backgroundColor: '#f2f2f2',
+    },
     datePickerButton: {
         borderWidth: 1,
         borderColor: '#ccc',
@@ -315,8 +335,28 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         elevation: 2,
+    },
+    conteudoCard: {
+        flex: 1,
+        marginRight: 10,
+    },
+    colunaAcoes: {
+        alignItems: 'flex-end',
+    },
+    categoriaTag: {
+        backgroundColor: '#0D47A1',
+        borderRadius: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        marginBottom: 10,
+        alignSelf: 'flex-end',
+    },
+    categoriaTexto: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
     tarefaConcluida: {
         opacity: 0.5,
@@ -326,6 +366,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         textTransform: 'uppercase',
+        marginBottom: 5,
     },
     prazo: {
         fontSize: 12,
@@ -334,12 +375,14 @@ const styles = StyleSheet.create({
     },
     botoes: {
         flexDirection: 'row',
-        gap: 10,
+        gap: 8,
     },
     botao: {
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 6,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     concluir: {
         backgroundColor: '#4CAF50',
@@ -399,8 +442,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 10,
-    },
-    logout: {
-        marginTop: 20,
     },
 });

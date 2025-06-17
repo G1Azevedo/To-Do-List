@@ -20,11 +20,9 @@ export default function CadastroScreen({ navigation }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
-    const [mensagemSucesso, setMensagemSucesso] = useState("");
     const [mensagemErro, setMensagemErro] = useState("");
 
     const irParaLogin = () => {
-        setMensagemSucesso("");
         setMensagemErro("");
         navigation.navigate('Login');
     };
@@ -35,7 +33,6 @@ export default function CadastroScreen({ navigation }: Props) {
     };
 
     const handleCadastro = () => {
-        setMensagemSucesso("");
         setMensagemErro("");
 
         if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
@@ -61,12 +58,7 @@ export default function CadastroScreen({ navigation }: Props) {
         usuariosCadastrados.push({ email, senha });
         console.log("Usuários cadastrados atualmente (simulação):", usuariosCadastrados);
 
-        setMensagemSucesso("Usuário cadastrado com sucesso! Agora você pode fazer login.");
-
-        setNome("");
-        setEmail("");
-        setSenha("");
-        setConfirmarSenha("");
+        navigation.navigate('Login', { successMessage: 'Usuário cadastrado com sucesso!' });
     };
 
     return (
@@ -81,10 +73,7 @@ export default function CadastroScreen({ navigation }: Props) {
                     onChangeText={(text) => {
                         const textoFiltrado = text.replace(/[^a-zA-Z\s]/g, '');
                         setNome(textoFiltrado);
-                        if (mensagemErro || mensagemSucesso) {
-                            setMensagemErro("");
-                            setMensagemSucesso("");
-                        }
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     autoCapitalize="words"
@@ -96,10 +85,7 @@ export default function CadastroScreen({ navigation }: Props) {
                     value={email}
                     onChangeText={(text) => {
                         setEmail(text);
-                        if (mensagemErro || mensagemSucesso) {
-                            setMensagemErro("");
-                            setMensagemSucesso("");
-                        }
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     keyboardType="email-address"
@@ -112,10 +98,7 @@ export default function CadastroScreen({ navigation }: Props) {
                     value={senha}
                     onChangeText={(text) => {
                         setSenha(text);
-                        if (mensagemErro || mensagemSucesso) {
-                            setMensagemErro("");
-                            setMensagemSucesso("");
-                        }
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     secureTextEntry={true}
@@ -127,18 +110,13 @@ export default function CadastroScreen({ navigation }: Props) {
                     value={confirmarSenha}
                     onChangeText={(text) => {
                         setConfirmarSenha(text);
-                        if (mensagemErro || mensagemSucesso) {
-                            setMensagemErro("");
-                            setMensagemSucesso("");
-                        }
+                        if (mensagemErro) setMensagemErro("");
                     }}
                     style={styles.input}
                     secureTextEntry={true}
                 />
 
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
-
-                {mensagemSucesso ? <Text style={styles.mensagemSucessoText}>{mensagemSucesso}</Text> : null}
 
                 <Button title="Cadastrar" onPress={handleCadastro} />
 
@@ -200,12 +178,4 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         fontSize: 14,
     },
-
-    mensagemSucessoText: {
-        color: 'green',
-        textAlign: 'center',
-        marginBottom: 10,
-        fontSize: 16,
-        fontWeight: 'bold',
-    }
 });
