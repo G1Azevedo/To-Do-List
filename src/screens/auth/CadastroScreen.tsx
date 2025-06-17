@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -32,7 +33,7 @@ export default function CadastroScreen({ navigation }: Props) {
         return re.test(email);
     };
 
-    const handleCadastro = () => {
+    const handleCadastro = async () => {
         setMensagemErro("");
 
         if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
@@ -56,7 +57,13 @@ export default function CadastroScreen({ navigation }: Props) {
         }
 
         usuariosCadastrados.push({ email, senha });
-        console.log("Usuários cadastrados atualmente (simulação):", usuariosCadastrados);
+
+        try {
+            const jsonValue = JSON.stringify(usuariosCadastrados);
+            await AsyncStorage.setItem('@usuarios', jsonValue);
+        } catch (e) {
+            console.error("Erro ao salvar usuários", e);
+        }
 
         navigation.navigate('Login', { successMessage: 'Usuário cadastrado com sucesso!' });
     };

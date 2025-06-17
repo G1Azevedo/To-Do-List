@@ -1,24 +1,44 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-    RootStackParamList,
-    'Login'
->;
-
-type Props = {
-    navigation: LoginScreenNavigationProp;
-};
-
 import { usuariosCadastrados } from '../auth/CadastroScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function LoginScreen({ navigation }: Props) {
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+
+export default function LoginScreen({ navigation, route }: Props) {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [mensagemErro, setMensagemErro] = useState("");
+    const [mensagemSucesso, setMensagemSucesso] = useState("");
+
+    useEffect(() => {
+        const carregarUsuarios = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('@usuarios');
+                if (jsonValue != null) {
+                    const usuariosSalvos = JSON.parse(jsonValue);
+                    if (usuariosSalvos.length > 0) {
+                        usuariosCadastrados.length = 0;
+                        Array.prototype.push.apply(usuariosCadastrados, usuariosSalvos);
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao carregar usuários", e);
+            }
+        };
+
+        carregarUsuarios();
+    }, []);
+
+    useEffect(() => {
+        if (route.params?.successMessage) {
+            setMensagemSucesso(route.params.successMessage);
+            setMensagemErro("");
+        }
+    }, [route.params?.successMessage]);
 
     const irParaCadastro = () => {
         setMensagemErro("");
@@ -26,20 +46,28 @@ export default function LoginScreen({ navigation }: Props) {
     };
 
     const handleLogin = () => {
-        console.log("Tentativa de login com email:", email, "e senha:", senha);
-
         const usuarioEncontrado = usuariosCadastrados.find(
             user => user.email === email && user.senha === senha
         );
 
         if (usuarioEncontrado) {
-            console.log("Login bem-sucedido para:", email);
             setMensagemErro("");
             navigation.replace('Tarefas');
         } else {
-            console.log("Credenciais incorretas, definindo mensagem de erro na tela.");
             setMensagemErro("Usuário ou senha incorreta.");
         }
+    };
+
+    const handleEmailChange = (text: string) => {
+        setEmail(text);
+        if (mensagemErro) setMensagemErro("");
+        if (mensagemSucesso) setMensagemSucesso("");
+    };
+
+    const handleSenhaChange = (text: string) => {
+        setSenha(text);
+        if (mensagemErro) setMensagemErro("");
+        if (mensagemSucesso) setMensagemSucesso("");
     };
 
     return (
@@ -47,14 +75,13 @@ export default function LoginScreen({ navigation }: Props) {
             <Text style={styles.titulo}>Login</Text>
 
             <View style={styles.form}>
+                {mensagemSucesso ? <Text style={styles.mensagemSucessoText}>{mensagemSucesso}</Text> : null}
+
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                     placeholder="Digite seu email"
                     value={email}
-                    onChangeText={(text) => {
-                        setEmail(text);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={handleEmailChange}
                     style={styles.input}
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -64,10 +91,7 @@ export default function LoginScreen({ navigation }: Props) {
                 <TextInput
                     placeholder="Digite sua senha"
                     value={senha}
-                    onChangeText={(text) => {
-                        setSenha(text);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={handleSenhaChange}
                     style={styles.input}
                     secureTextEntry={true}
                 />
@@ -128,11 +152,17 @@ const styles = StyleSheet.create({
         color: 'blue',
         textDecorationLine: 'underline',
     },
-
     mensagemErroText: {
         color: 'red',
         textAlign: 'center',
         marginBottom: 10,
         fontSize: 14,
+    },
+    mensagemSucessoText: {
+        color: 'green',
+        textAlign: 'center',
+        marginBottom: 15,
+        fontSize: 16,
+        fontWeight: 'bold',
     }
 });

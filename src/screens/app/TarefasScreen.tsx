@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Alert,
     Button,
@@ -19,6 +19,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import MaskInput from 'react-native-mask-input';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type TarefasScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -43,6 +44,40 @@ export default function TarefasScreen({ navigation }: Props) {
     const [categoria, setCategoria] = useState(categorias[0]);
 
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
+    const isInitialMount = useRef(true);
+
+    useEffect(() => {
+        const carregarTarefas = async () => {
+            try {
+                const tarefasSalvas = await AsyncStorage.getItem('@tarefas');
+                if (tarefasSalvas !== null) {
+                    setLista(JSON.parse(tarefasSalvas));
+                }
+            } catch (e) {
+                console.error('Erro ao carregar tarefas.', e);
+            }
+        };
+
+        carregarTarefas();
+    }, []);
+
+    useEffect(() => {
+        const salvarTarefas = async () => {
+            try {
+                const jsonValue = JSON.stringify(lista);
+                await AsyncStorage.setItem('@tarefas', jsonValue);
+            } catch (e) {
+                console.error('Erro ao salvar tarefas.', e);
+            }
+        };
+
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        } else {
+            salvarTarefas();
+        }
+    }, [lista]);
+
 
     const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
         setMostrarDatePicker(false);
@@ -69,7 +104,7 @@ export default function TarefasScreen({ navigation }: Props) {
         const day = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
         const year = parseInt(parts[2], 10);
-        
+
         if (isNaN(day) || isNaN(month) || isNaN(year) || year < 1000) {
             return false;
         }
@@ -138,7 +173,7 @@ export default function TarefasScreen({ navigation }: Props) {
 
         setMostrarModal(false);
     };
-    
+
     const concluirTarefa = (id: string) => {
         setLista(listaAtual =>
             listaAtual.map(tarefa =>
@@ -232,7 +267,7 @@ export default function TarefasScreen({ navigation }: Props) {
                             onChangeText={setDescricao}
                             style={styles.input}
                         />
-                        
+
                         {Platform.OS === 'web' ? (
                             <MaskInput
                                 value={prazo}
@@ -261,7 +296,7 @@ export default function TarefasScreen({ navigation }: Props) {
                                 ))}
                             </Picker>
                         </View>
-                        
+
                         <View style={styles.modalBotoes}>
                             <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
                             <Button title="Salvar" onPress={salvar} />
@@ -269,7 +304,7 @@ export default function TarefasScreen({ navigation }: Props) {
                     </View>
                 </View>
             </Modal>
-            
+
             {mostrarDatePicker && Platform.OS !== 'web' && (
                 <DateTimePicker
                     testID="dateTimePicker"
@@ -280,7 +315,7 @@ export default function TarefasScreen({ navigation }: Props) {
                     onChange={onChangeDate}
                 />
             )}
-            
+
             <StatusBar style="auto" />
         </View>
     );
@@ -392,10 +427,6 @@ const styles = StyleSheet.create({
     },
     excluir: {
         backgroundColor: '#E57373',
-    },
-    botaoTexto: {
-        color: '#fff',
-        fontWeight: 'bold',
     },
     vazio: {
         textAlign: 'center',
