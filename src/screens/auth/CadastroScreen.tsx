@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import pb from '../../services/pocketbase';
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -14,17 +14,15 @@ type Props = {
     navigation: CadastroScreenNavigationProp;
 };
 
-export const usuariosCadastrados: { email: string; senha: string }[] = [];
-
 export default function CadastroScreen({ navigation }: Props) {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
     const [mensagemErro, setMensagemErro] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const irParaLogin = () => {
-        setMensagemErro("");
         navigation.navigate('Login');
     };
 
@@ -40,32 +38,38 @@ export default function CadastroScreen({ navigation }: Props) {
             setMensagemErro("Por favor, preencha todos os campos.");
             return;
         }
-
         if (!validarEmail(email)) {
             setMensagemErro("Por favor, digite um e-mail válido.");
             return;
         }
-
+        if (senha.length < 6) {
+            setMensagemErro("A senha deve ter no mínimo 6 caracteres.");
+            return;
+        }
         if (senha !== confirmarSenha) {
             setMensagemErro("As senhas não coincidem.");
             return;
         }
 
-        if (usuariosCadastrados.some(user => user.email === email)) {
-            setMensagemErro("Este email já está cadastrado. Tente outro.");
-            return;
-        }
+        setLoading(true);
 
-        usuariosCadastrados.push({ email, senha });
+        const data = {
+            email: email,
+            emailVisibility: true,
+            password: senha,
+            passwordConfirm: confirmarSenha,
+            name: nome,
+        };
 
         try {
-            const jsonValue = JSON.stringify(usuariosCadastrados);
-            await AsyncStorage.setItem('@usuarios', jsonValue);
-        } catch (e) {
-            console.error("Erro ao salvar usuários", e);
+            await pb.collection('users').create(data);
+            navigation.navigate('Login', { successMessage: 'Usuário cadastrado com sucesso!' });
+        } catch (error: any) {
+            setMensagemErro('Erro ao cadastrar. Verifique os dados e tente novamente.');
+            console.error('Erro de cadastro:', JSON.stringify(error));
+        } finally {
+            setLoading(false);
         }
-
-        navigation.navigate('Login', { successMessage: 'Usuário cadastrado com sucesso!' });
     };
 
     return (
@@ -77,55 +81,46 @@ export default function CadastroScreen({ navigation }: Props) {
                 <TextInput
                     placeholder="Digite seu nome completo"
                     value={nome}
-                    onChangeText={(text) => {
-                        const textoFiltrado = text.replace(/[^a-zA-Z\s]/g, '');
-                        setNome(textoFiltrado);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={setNome}
                     style={styles.input}
                     autoCapitalize="words"
+                    editable={!loading}
                 />
 
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                     placeholder="Digite seu email"
                     value={email}
-                    onChangeText={(text) => {
-                        setEmail(text);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={setEmail}
                     style={styles.input}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    editable={!loading}
                 />
 
                 <Text style={styles.label}>Senha</Text>
                 <TextInput
                     placeholder="Digite sua senha (mín. 6 caracteres)"
                     value={senha}
-                    onChangeText={(text) => {
-                        setSenha(text);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={setSenha}
                     style={styles.input}
                     secureTextEntry={true}
+                    editable={!loading}
                 />
 
                 <Text style={styles.label}>Confirmar Senha</Text>
                 <TextInput
                     placeholder="Confirme sua senha"
                     value={confirmarSenha}
-                    onChangeText={(text) => {
-                        setConfirmarSenha(text);
-                        if (mensagemErro) setMensagemErro("");
-                    }}
+                    onChangeText={setConfirmarSenha}
                     style={styles.input}
                     secureTextEntry={true}
+                    editable={!loading}
                 />
 
                 {mensagemErro ? <Text style={styles.mensagemErroText}>{mensagemErro}</Text> : null}
 
-                <Button title="Cadastrar" onPress={handleCadastro} />
+                <Button title={loading ? "Cadastrando..." : "Cadastrar"} onPress={handleCadastro} disabled={loading} />
 
                 <TouchableOpacity onPress={irParaLogin} style={styles.linkContainer}>
                     <Text style={styles.linkText}>Já tem uma conta? Faça Login</Text>

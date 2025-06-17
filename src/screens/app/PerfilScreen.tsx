@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Button, StyleSheet, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import pb from '../../services/pocketbase';
+import { deleteAuthToken } from '../../services/authStorage';
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Perfil'>;
 
@@ -10,11 +12,18 @@ type Props = {
 };
 
 export default function PerfilScreen({ navigation }: Props) {
-    const handleLogout = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-        });
+    const handleLogout = async () => {
+        try {
+            pb.authStore.clear();
+            await deleteAuthToken();
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            });
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível sair da conta.");
+            console.error("Erro ao fazer logout:", error);
+        }
     };
 
     const handleChangePassword = () => {
