@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     Alert,
     Button,
@@ -33,18 +33,25 @@ type Props = {
 const categorias = ['Trabalho', 'Faculdade', 'Academia', 'Compras', 'Outros'];
 
 export default function TarefasScreen({ navigation }: Props) {
+    // Estados para a lista de tarefas
     const [lista, setLista] = useState<Tarefa[]>([]);
+    const [listaFiltrada, setListaFiltrada] = useState<Tarefa[]>([]);
     const [loading, setLoading] = useState(true);
-    const [mostrarModal, setMostrarModal] = useState(false);
 
+    // Estados para o modal de criação/edição
+    const [mostrarModal, setMostrarModal] = useState(false);
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
     const [editando, setEditando] = useState<Tarefa | null>(null);
-
     const [data, setData] = useState(new Date());
     const [prazo, setPrazo] = useState('');
     const [categoria, setCategoria] = useState(categorias[0]);
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
+
+    // Estados para os filtros
+    const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
+    const [filtroData, setFiltroData] = useState<Date | null>(null);
+    const [mostrarFiltroData, setMostrarFiltroData] = useState(false);
 
     const carregarTarefas = async () => {
         setLoading(true);
@@ -76,6 +83,31 @@ export default function TarefasScreen({ navigation }: Props) {
         }, [])
     );
 
+    useEffect(() => {
+        let tarefasFiltradas = [...lista];
+
+        if (filtroCategoria) {
+            tarefasFiltradas = tarefasFiltradas.filter(
+                t => t.categoria === filtroCategoria
+            );
+        }
+
+        if (filtroData) {
+            tarefasFiltradas = tarefasFiltradas.filter(t => {
+                const dataTarefa = new Date(t.prazo);
+                const dataFiltro = new Date(filtroData);
+                return dataTarefa.getUTCFullYear() === dataFiltro.getUTCFullYear() &&
+                    dataTarefa.getUTCMonth() === dataFiltro.getUTCMonth() &&
+                    dataTarefa.getUTCDate() === dataFiltro.getUTCDate();
+            });
+        }
+
+        tarefasFiltradas.sort((a, b) => Number(a.concluida) - Number(b.concluida));
+
+        setListaFiltrada(tarefasFiltradas);
+    }, [lista, filtroCategoria, filtroData]);
+
+
     const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
         setMostrarDatePicker(false);
         if (selectedDate) {
@@ -83,6 +115,13 @@ export default function TarefasScreen({ navigation }: Props) {
             setPrazo(selectedDate.toLocaleDateString('pt-BR'));
         }
     };
+
+    const onFiltroDataChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setMostrarFiltroData(false);
+        if (event.type === 'set' && selectedDate) {
+            setFiltroData(selectedDate);
+        }
+    }
 
     const isPrazoValido = (prazoStr: string): boolean => {
         const parts = prazoStr.split('/');
@@ -145,7 +184,7 @@ export default function TarefasScreen({ navigation }: Props) {
             prazo: dataParaSalvar.toISOString(),
             categoria,
             user: pb.authStore.model?.id,
-            concluida: false
+            concluida: editando ? editando.concluida : false
         };
 
         try {
@@ -168,11 +207,17 @@ export default function TarefasScreen({ navigation }: Props) {
             carregarTarefas();
         } catch (error) {
             console.error("Erro ao excluir tarefa:", error);
+            Alert.alert("Erro", "Não foi possível excluir a tarefa.");
         }
     };
 
+    const limparFiltros = () => {
+        setFiltroCategoria(null);
+        setFiltroData(null);
+    }
+
     const renderTarefa = ({ item }: { item: Tarefa }) => (
-        <View style={styles.card}>
+        <View style={[styles.card, item.concluida && styles.tarefaConcluida]}>
             <View style={styles.conteudoCard}>
                 <Text style={styles.titulo}>{item.titulo}</Text>
                 <Text>{item.descricao}</Text>
@@ -184,26 +229,50 @@ export default function TarefasScreen({ navigation }: Props) {
                 </View>
                 <View style={styles.botoes}>
                     <TouchableOpacity
-                        style={[styles.botao, styles.concluir]}
-                        onPress={() => excluir(item.id)}
-                    >
-                        <Ionicons name="checkmark-circle-outline" size={22} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
                         style={[styles.botao, styles.editar]}
                         onPress={() => abrirModal(item)}
                     >
                         <Ionicons name="pencil-outline" size={20} color="white" />
                     </TouchableOpacity>
+                    {/* BOTÃO EXCLUI DIRETAMENTE */}
                     <TouchableOpacity
-                        style={[styles.botao, styles.excluir]}
+                        style={[styles.botao, styles.concluir]}
                         onPress={() => excluir(item.id)}
                     >
-                        <Ionicons name="trash-outline" size={20} color="white" />
+                        <Ionicons name="checkmark-circle-outline" size={22} color="white" />
                     </TouchableOpacity>
                 </View>
             </View>
         </View>
+    );
+
+    const renderHeader = () => (
+        <>
+            <Text style={styles.header}>Minhas Tarefas</Text>
+            <View style={styles.filtroContainer}>
+                <View style={styles.pickerContainerFiltro}>
+                    <Picker
+                        selectedValue={filtroCategoria || 'todas'}
+                        onValueChange={(itemValue) => setFiltroCategoria(itemValue === 'todas' ? null : itemValue)}
+                    >
+                        <Picker.Item label="Todas as Categorias" value="todas" />
+                        {categorias.map((cat) => (<Picker.Item key={cat} label={cat} value={cat} />))}
+                    </Picker>
+                </View>
+                <View style={styles.filtroBotoesContainer}>
+                    <TouchableOpacity onPress={() => setMostrarFiltroData(true)} style={styles.filtroBotao}>
+                        <Ionicons name="calendar-outline" size={20} color="#0D47A1" />
+                        <Text style={styles.filtroBotaoTexto}>
+                            {filtroData ? filtroData.toLocaleDateString('pt-BR') : 'Data'}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={limparFiltros} style={styles.filtroBotao}>
+                        <Ionicons name="close-circle-outline" size={20} color="#E57373" />
+                        <Text style={[styles.filtroBotaoTexto, { color: '#E57373' }]}>Limpar</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </>
     );
 
     if (loading) {
@@ -217,11 +286,11 @@ export default function TarefasScreen({ navigation }: Props) {
     return (
         <View style={styles.container}>
             <FlatList
-                data={lista}
+                data={listaFiltrada}
                 renderItem={renderTarefa}
                 keyExtractor={item => item.id}
-                ListHeaderComponent={<Text style={styles.header}>Minhas Tarefas</Text>}
-                ListEmptyComponent={<Text style={styles.vazio}>Você ainda não adicionou nenhuma tarefa 🙃</Text>}
+                ListHeaderComponent={renderHeader}
+                ListEmptyComponent={<Text style={styles.vazio}>Nenhuma tarefa encontrada.</Text>}
             />
 
             <TouchableOpacity style={styles.fab} onPress={() => abrirModal()}>
@@ -261,6 +330,10 @@ export default function TarefasScreen({ navigation }: Props) {
                 <DateTimePicker testID="dateTimePicker" value={data} mode="date" is24Hour={true} display="default" onChange={onChangeDate} />
             )}
 
+            {mostrarFiltroData && (
+                <DateTimePicker testID="filtroDateTimePicker" value={filtroData || new Date()} mode="date" display="default" onChange={onFiltroDataChange} />
+            )}
+
             <StatusBar style="auto" />
         </View>
     );
@@ -281,8 +354,38 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         color: '#0D47A1',
-        marginVertical: 20,
+        marginTop: 20,
+        marginBottom: 10,
         textAlign: 'center',
+    },
+    filtroContainer: {
+        paddingHorizontal: 20,
+        marginBottom: 10,
+    },
+    pickerContainerFiltro: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        backgroundColor: '#f2f2f2',
+        marginBottom: 10,
+    },
+    filtroBotoesContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    filtroBotao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        backgroundColor: '#E6F3FF',
+    },
+    filtroBotaoTexto: {
+        marginLeft: 5,
+        color: '#0D47A1',
+        fontWeight: 'bold',
     },
     input: {
         borderWidth: 1,
@@ -300,6 +403,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 12,
         backgroundColor: '#f2f2f2',
+        justifyContent: 'center'
     },
     datePickerButton: {
         borderWidth: 1,
@@ -346,6 +450,7 @@ const styles = StyleSheet.create({
     },
     tarefaConcluida: {
         opacity: 0.5,
+        backgroundColor: '#e0e0e0',
     },
     titulo: {
         fontSize: 18,
@@ -374,9 +479,6 @@ const styles = StyleSheet.create({
     },
     editar: {
         backgroundColor: '#FFD54F',
-    },
-    excluir: {
-        backgroundColor: '#E57373',
     },
     vazio: {
         textAlign: 'center',
