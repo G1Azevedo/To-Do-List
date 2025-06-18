@@ -33,12 +33,10 @@ type Props = {
 const categorias = ['Trabalho', 'Faculdade', 'Academia', 'Compras', 'Outros'];
 
 export default function TarefasScreen({ navigation }: Props) {
-    // Estados para a lista de tarefas
     const [lista, setLista] = useState<Tarefa[]>([]);
     const [listaFiltrada, setListaFiltrada] = useState<Tarefa[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados para o modal de criação/edição
     const [mostrarModal, setMostrarModal] = useState(false);
     const [titulo, setTitulo] = useState('');
     const [descricao, setDescricao] = useState('');
@@ -48,7 +46,6 @@ export default function TarefasScreen({ navigation }: Props) {
     const [categoria, setCategoria] = useState(categorias[0]);
     const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
 
-    // Estados para os filtros
     const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
     const [filtroData, setFiltroData] = useState<Date | null>(null);
     const [mostrarFiltroData, setMostrarFiltroData] = useState(false);
