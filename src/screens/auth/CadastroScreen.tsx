@@ -31,23 +31,29 @@ export default function CadastroScreen({ navigation }: Props) {
         return re.test(email);
     };
 
-    const handleCadastro = async () => {
-        setMensagemErro("");
-
+    const validateForm = () => {
         if (!nome.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
             setMensagemErro("Por favor, preencha todos os campos.");
-            return;
+            return false;
         }
         if (!validarEmail(email)) {
             setMensagemErro("Por favor, digite um e-mail válido.");
-            return;
+            return false;
         }
         if (senha.length < 6) {
             setMensagemErro("A senha deve ter no mínimo 6 caracteres.");
-            return;
+            return false;
         }
         if (senha !== confirmarSenha) {
             setMensagemErro("As senhas não coincidem.");
+            return false;
+        }
+        setMensagemErro("");
+        return true;
+    }
+
+    const handleCadastro = async () => {
+        if (!validateForm()) {
             return;
         }
 
@@ -66,7 +72,11 @@ export default function CadastroScreen({ navigation }: Props) {
             navigation.navigate('Login', { successMessage: 'Usuário cadastrado com sucesso!' });
         } catch (error: any) {
             setMensagemErro('Erro ao cadastrar. Verifique os dados e tente novamente.');
-            console.error('Erro de cadastro:', JSON.stringify(error));
+            if (error.data) {
+                console.error('Erro de cadastro PocketBase:', error.data);
+            } else {
+                console.error('Erro de cadastro:', error);
+            }
         } finally {
             setLoading(false);
         }

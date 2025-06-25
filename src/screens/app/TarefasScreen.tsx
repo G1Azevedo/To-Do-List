@@ -23,6 +23,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import pb from '../../services/pocketbase';
 import { deleteAuthToken } from '../../services/authStorage';
+import TarefaCard from '../../components/TarefaCard'; // Importando o novo componente
 
 type TarefasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tarefas'>;
 
@@ -199,12 +200,41 @@ export default function TarefasScreen({ navigation }: Props) {
     };
 
     const excluir = async (id: string) => {
+        Alert.alert(
+            "Excluir Tarefa",
+            "Você tem certeza que deseja excluir esta tarefa?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Excluir",
+                    onPress: async () => {
+                        try {
+                            await pb.collection('tarefas').delete(id);
+                            carregarTarefas();
+                        } catch (error) {
+                            console.error("Erro ao excluir tarefa:", error);
+                            Alert.alert("Erro", "Não foi possível excluir a tarefa.");
+                        }
+                    },
+                    style: "destructive"
+                }
+            ]
+        );
+    };
+
+    const toggleConcluida = async (tarefa: Tarefa) => {
         try {
-            await pb.collection('tarefas').delete(id);
-            carregarTarefas();
+            await pb.collection('tarefas').update(tarefa.id, {
+                concluida: !tarefa.concluida,
+            });
+            setLista(prevLista =>
+                prevLista.map(t =>
+                    t.id === tarefa.id ? { ...t, concluida: !t.concluida } : t
+                )
+            );
         } catch (error) {
-            console.error("Erro ao excluir tarefa:", error);
-            Alert.alert("Erro", "Não foi possível excluir a tarefa.");
+            console.error("Erro ao atualizar tarefa:", error);
+            Alert.alert("Erro", "Não foi possível atualizar o status da tarefa.");
         }
     };
 
@@ -214,33 +244,12 @@ export default function TarefasScreen({ navigation }: Props) {
     }
 
     const renderTarefa = ({ item }: { item: Tarefa }) => (
-        <View style={[styles.card, item.concluida && styles.tarefaConcluida]}>
-            <View style={styles.conteudoCard}>
-                <Text style={styles.titulo}>{item.titulo}</Text>
-                <Text>{item.descricao}</Text>
-                <Text style={styles.prazo}>Prazo: {new Date(item.prazo).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</Text>
-            </View>
-            <View style={styles.colunaAcoes}>
-                <View style={styles.categoriaTag}>
-                    <Text style={styles.categoriaTexto}>{item.categoria}</Text>
-                </View>
-                <View style={styles.botoes}>
-                    <TouchableOpacity
-                        style={[styles.botao, styles.editar]}
-                        onPress={() => abrirModal(item)}
-                    >
-                        <Ionicons name="pencil-outline" size={20} color="white" />
-                    </TouchableOpacity>
-                    {/* BOTÃO EXCLUI DIRETAMENTE */}
-                    <TouchableOpacity
-                        style={[styles.botao, styles.concluir]}
-                        onPress={() => excluir(item.id)}
-                    >
-                        <Ionicons name="checkmark-circle-outline" size={22} color="white" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
+        <TarefaCard
+            item={item}
+            onEdit={abrirModal}
+            onDelete={excluir}
+            onToggleConcluida={toggleConcluida}
+        />
     );
 
     const renderHeader = () => (
@@ -413,69 +422,6 @@ const styles = StyleSheet.create({
     },
     datePickerButtonText: {
         fontSize: 16,
-    },
-    card: {
-        backgroundColor: '#f9f9f9',
-        padding: 15,
-        borderRadius: 10,
-        marginHorizontal: 20,
-        marginBottom: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        elevation: 2,
-    },
-    conteudoCard: {
-        flex: 1,
-        marginRight: 10,
-    },
-    colunaAcoes: {
-        alignItems: 'flex-end',
-    },
-    categoriaTag: {
-        backgroundColor: '#0D47A1',
-        borderRadius: 10,
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        marginBottom: 10,
-        alignSelf: 'flex-end',
-    },
-    categoriaTexto: {
-        color: '#fff',
-        fontSize: 10,
-        fontWeight: 'bold',
-    },
-    tarefaConcluida: {
-        opacity: 0.5,
-        backgroundColor: '#e0e0e0',
-    },
-    titulo: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textTransform: 'uppercase',
-        marginBottom: 5,
-    },
-    prazo: {
-        fontSize: 12,
-        color: '#555',
-        marginTop: 5,
-    },
-    botoes: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    botao: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    concluir: {
-        backgroundColor: '#4CAF50',
-    },
-    editar: {
-        backgroundColor: '#FFD54F',
     },
     vazio: {
         textAlign: 'center',
