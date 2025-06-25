@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Button, StyleSheet, Alert, Modal, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Button, StyleSheet, Alert, Text, TextInput, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import pb from '../../services/pocketbase';
 import { saveAuthToken, deleteAuthToken } from '../../services/authStorage';
+import AppModal from '../../components/AppModal'; // Importando o novo componente
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Perfil'>;
 
@@ -134,78 +135,65 @@ export default function PerfilScreen({ navigation }: Props) {
                 <Text style={styles.deleteText}>Excluir conta permanentemente</Text>
             </TouchableOpacity>
 
-            <Modal
-                animationType="slide"
-                transparent={true}
+            <AppModal
                 visible={modalSenhaVisivel}
+                title="Alterar Senha"
                 onRequestClose={() => setModalSenhaVisivel(false)}
             >
-                <View style={styles.overlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Alterar Senha</Text>
+                <TextInput
+                    placeholder="Senha Atual"
+                    value={senhaAntiga}
+                    onChangeText={setSenhaAntiga}
+                    secureTextEntry
+                    style={styles.input}
+                />
+                <TextInput
+                    placeholder="Nova Senha"
+                    value={novaSenha}
+                    onChangeText={setNovaSenha}
+                    secureTextEntry
+                    style={styles.input}
+                />
+                <TextInput
+                    placeholder="Confirmar Nova Senha"
+                    value={confirmarNovaSenha}
+                    onChangeText={setConfirmarNovaSenha}
+                    secureTextEntry
+                    style={styles.input}
+                />
 
-                        <TextInput
-                            placeholder="Senha Atual"
-                            value={senhaAntiga}
-                            onChangeText={setSenhaAntiga}
-                            secureTextEntry
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Nova Senha"
-                            value={novaSenha}
-                            onChangeText={setNovaSenha}
-                            secureTextEntry
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder="Confirmar Nova Senha"
-                            value={confirmarNovaSenha}
-                            onChangeText={setConfirmarNovaSenha}
-                            secureTextEntry
-                            style={styles.input}
-                        />
+                {erroModal ? <Text style={styles.modalErrorText}>{erroModal}</Text> : null}
 
-                        {erroModal ? <Text style={styles.modalErrorText}>{erroModal}</Text> : null}
-
-                        <View style={styles.modalButtons}>
-                            <Button title="Cancelar" onPress={() => setModalSenhaVisivel(false)} color="gray" />
-                            <Button title={loading ? "Salvando..." : "Salvar"} onPress={handleUpdatePassword} disabled={loading} />
-                        </View>
-                    </View>
+                <View style={styles.modalButtons}>
+                    <Button title="Cancelar" onPress={() => setModalSenhaVisivel(false)} color="gray" />
+                    <Button title={loading ? "Salvando..." : "Salvar"} onPress={handleUpdatePassword} disabled={loading} />
                 </View>
-            </Modal>
+            </AppModal>
 
-            <Modal
-                animationType="slide"
-                transparent={true}
+            <AppModal
                 visible={modalExcluirVisivel}
+                title="Excluir Conta"
                 onRequestClose={() => setModalExcluirVisivel(false)}
             >
-                <View style={styles.overlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Excluir Conta</Text>
-                        <Text style={styles.modalSubTitle}>
-                            Esta ação é irreversível. Para confirmar, por favor, digite sua senha atual.
-                        </Text>
+                <Text style={styles.modalSubTitle}>
+                    Esta ação é irreversível. Para confirmar, por favor, digite sua senha atual.
+                </Text>
 
-                        <TextInput
-                            placeholder="Digite sua senha"
-                            value={senhaExclusao}
-                            onChangeText={setSenhaExclusao}
-                            secureTextEntry
-                            style={styles.input}
-                        />
+                <TextInput
+                    placeholder="Digite sua senha"
+                    value={senhaExclusao}
+                    onChangeText={setSenhaExclusao}
+                    secureTextEntry
+                    style={styles.input}
+                />
 
-                        {erroModal ? <Text style={styles.modalErrorText}>{erroModal}</Text> : null}
+                {erroModal ? <Text style={styles.modalErrorText}>{erroModal}</Text> : null}
 
-                        <View style={styles.modalButtons}>
-                            <Button title="Cancelar" onPress={() => setModalExcluirVisivel(false)} color="gray" />
-                            <Button title={loading ? "Excluindo..." : "Excluir"} onPress={handleDeleteAccount} disabled={loading} color="red" />
-                        </View>
-                    </View>
+                <View style={styles.modalButtons}>
+                    <Button title="Cancelar" onPress={() => setModalExcluirVisivel(false)} color="gray" />
+                    <Button title={loading ? "Excluindo..." : "Excluir"} onPress={handleDeleteAccount} disabled={loading} color="red" />
                 </View>
-            </Modal>
+            </AppModal>
         </View>
     );
 }
@@ -219,25 +207,6 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         marginBottom: 15,
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContainer: {
-        width: '90%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        elevation: 10,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
     },
     modalSubTitle: {
         fontSize: 16,

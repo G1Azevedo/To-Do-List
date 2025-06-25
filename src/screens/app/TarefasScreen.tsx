@@ -4,7 +4,6 @@ import {
     Alert,
     Button,
     FlatList,
-    Modal,
     StyleSheet,
     Text,
     TextInput,
@@ -23,7 +22,8 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import pb from '../../services/pocketbase';
 import { deleteAuthToken } from '../../services/authStorage';
-import TarefaCard from '../../components/TarefaCard'; // Importando o novo componente
+import TarefaCard from '../../components/TarefaCard';
+import AppModal from '../../components/AppModal'; // Importando o novo componente
 
 type TarefasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tarefas'>;
 
@@ -303,34 +303,33 @@ export default function TarefasScreen({ navigation }: Props) {
                 <Text style={styles.fabText}>+</Text>
             </TouchableOpacity>
 
-            <Modal animationType="slide" transparent visible={mostrarModal} onRequestClose={() => setMostrarModal(false)}>
-                <View style={styles.overlay}>
-                    <View style={styles.modal}>
-                        <Text style={styles.modalTitulo}>{editando ? 'Editar Tarefa' : 'Nova Tarefa'}</Text>
-                        <TextInput placeholder="Título" value={titulo} onChangeText={setTitulo} style={styles.input} />
-                        <TextInput placeholder="Descrição" value={descricao} onChangeText={setDescricao} style={styles.input} />
+            <AppModal
+                visible={mostrarModal}
+                title={editando ? 'Editar Tarefa' : 'Nova Tarefa'}
+                onRequestClose={() => setMostrarModal(false)}
+            >
+                <TextInput placeholder="Título" value={titulo} onChangeText={setTitulo} style={styles.input} />
+                <TextInput placeholder="Descrição" value={descricao} onChangeText={setDescricao} style={styles.input} />
 
-                        {Platform.OS === 'web' ? (
-                            <MaskInput value={prazo} onChangeText={(masked) => setPrazo(masked)} mask={[/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/]} placeholder="DD/MM/AAAA" keyboardType="numeric" style={styles.input} />
-                        ) : (
-                            <TouchableOpacity onPress={() => setMostrarDatePicker(true)} style={styles.datePickerButton}>
-                                <Text style={styles.datePickerButtonText}>Prazo: {data.toLocaleDateString('pt-BR')}</Text>
-                            </TouchableOpacity>
-                        )}
+                {Platform.OS === 'web' ? (
+                    <MaskInput value={prazo} onChangeText={(masked) => setPrazo(masked)} mask={[/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/]} placeholder="DD/MM/AAAA" keyboardType="numeric" style={styles.input} />
+                ) : (
+                    <TouchableOpacity onPress={() => setMostrarDatePicker(true)} style={styles.datePickerButton}>
+                        <Text style={styles.datePickerButtonText}>Prazo: {data.toLocaleDateString('pt-BR')}</Text>
+                    </TouchableOpacity>
+                )}
 
-                        <View style={styles.pickerContainer}>
-                            <Picker selectedValue={categoria} onValueChange={(itemValue) => setCategoria(itemValue)}>
-                                {categorias.map((cat, index) => (<Picker.Item key={index} label={cat} value={cat} />))}
-                            </Picker>
-                        </View>
-
-                        <View style={styles.modalBotoes}>
-                            <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
-                            <Button title="Salvar" onPress={salvar} />
-                        </View>
-                    </View>
+                <View style={styles.pickerContainer}>
+                    <Picker selectedValue={categoria} onValueChange={(itemValue) => setCategoria(itemValue)}>
+                        {categorias.map((cat, index) => (<Picker.Item key={index} label={cat} value={cat} />))}
+                    </Picker>
                 </View>
-            </Modal>
+
+                <View style={styles.modalBotoes}>
+                    <Button title="Cancelar" onPress={() => setMostrarModal(false)} color="gray" />
+                    <Button title="Salvar" onPress={salvar} />
+                </View>
+            </AppModal>
 
             {mostrarDatePicker && Platform.OS !== 'web' && (
                 <DateTimePicker testID="dateTimePicker" value={data} mode="date" is24Hour={true} display="default" onChange={onChangeDate} />
@@ -444,25 +443,6 @@ const styles = StyleSheet.create({
     fabText: {
         color: '#fff',
         fontSize: 30,
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modal: {
-        width: '90%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        elevation: 10,
-    },
-    modalTitulo: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 15,
-        textAlign: 'center',
     },
     modalBotoes: {
         flexDirection: 'row',
