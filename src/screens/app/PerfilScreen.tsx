@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import pb from '../../services/pocketbase';
 import { saveAuthToken, deleteAuthToken } from '../../services/authStorage';
-import AppModal from '../../components/AppModal'; // Importando o novo componente
+import AppModal from '../../components/AppModal';
 
 type PerfilScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Perfil'>;
 
